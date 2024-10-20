@@ -66,9 +66,6 @@ class PostViewBase(BaseModel):
     created_at: datetime
     users: UserBase
 
-    class Config:
-        json_encoders = {UserBase: lambda v: v.username}
-
 
 class PostAllBase(BaseModel):
     id: int
