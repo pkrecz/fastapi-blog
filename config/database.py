@@ -1,15 +1,18 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.engine import URL
+from dotenv import load_dotenv
+from .settings import settings
 
 
-url = URL.create(
-    drivername = 'postgresql',
-    username = 'postgres',
-    password = 'admin',
-    host = 'localhost',
-    port = 5432,
-    database = 'fastapi_blog_db')
+load_dotenv()
+
+
+url_docker = os.getenv('DATABASE_URL')
+if url_docker is not None:
+    url = url_docker
+else:
+    url = settings.DATABASE_URL_LOCAL
 
 
 engine = create_engine(url)
