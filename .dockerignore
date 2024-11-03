@@ -1,9 +1,7 @@
 *.pyc
 *~
-__pycache__
-env
-/.idea
-/.pytest_cache
+**/.pytest_cache
+**/__pycache__
 **/.git
 **/.gitignore
 **/.vscode
@@ -11,9 +9,8 @@ env
 **/.env
 **/.aws
 **/.ssh
-Dockerfile
-README.md
-docker-compose.yml
 **/.DS_Store
 **/venv
 **/env
+/.idea
+env

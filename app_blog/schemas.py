@@ -7,7 +7,7 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
 
-    
+
 class UserViewBase(BaseModel):
     id: int
     username: str
@@ -28,6 +28,7 @@ class UserUpdateBase(BaseModel):
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = None
+
 
 class UserChangePasswordBase(BaseModel):
     old_password: str

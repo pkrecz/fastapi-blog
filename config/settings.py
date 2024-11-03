@@ -8,6 +8,7 @@ class Settings(BaseSettings):
 
     title: str = 'Blog'
     version: str = '1.0.0'
+    docs_url: str = '/swagger'
 
     ACCESS_SECRET_KEY: str = str(os.getenv('ACCESS_SECRET_KEY'))
     REFRESH_SECRET_KEY: str = str(os.getenv('REFRESH_SECRET_KEY'))

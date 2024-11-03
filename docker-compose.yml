@@ -4,16 +4,19 @@ services:
   service_api:
     build: .
     image: blog_api:1.0
-    ports:
-      - "80:8000"
     env_file:
       - ./.env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    expose:
+      - "8000"
     depends_on:
-      - service_db
+      service_db:
+        condition: service_healthy
+    restart: always
     networks:
-      - network_blog
+      - network-internal
+      - network-external
 
 
   service_db:
@@ -21,7 +24,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - volume_blog_data:/var/lib/postgresql/data/
+      - blog-data:/var/lib/postgresql/data/
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -29,13 +32,32 @@ services:
       - POSTGRES_DATABASE=${POSTGRES_DATABASE}
     expose: 
       - 5432
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}'"]
+      interval: 5s
+      timeout: 10s
+      retries: 6
     networks:
-      - network_blog
+      - network-internal
+
+
+  service_nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - service_api
+    restart: always
+    networks:
+      - network-external
+      - network-internal
 
 
 volumes:
-  volume_blog_data:
+  blog-data:
 
 
 networks:
-  network_blog:
+  network-internal:
+  network-external:

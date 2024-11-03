@@ -8,10 +8,8 @@ from main import app
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Preparing test envoirment
-
 @pytest.fixture(scope='session')
 def db_test():
-
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
@@ -19,7 +17,6 @@ def db_test():
     session.close()
     transaction.rollback()
     connection.close()
-
 
 @pytest.fixture(scope='session')
 def client_test(db_test):
@@ -36,8 +33,7 @@ def client_test(db_test):
 
 
 # Preparing sample data
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_register_user():
     return {
             "username": "test",
@@ -46,37 +42,32 @@ def data_test_register_user():
             "password": "!ws@test_password",
             "password_confirm": "!ws@test_password"}
 
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_login():
     return {
             "username": "test",
             "password": "!ws@test_password"}
 
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_update_user():
     return {
             "full_name": "User Test - update",
             "email": "test_update@example.com"}
 
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_change_password():
     return {
             "old_password": "!ws@test_password",
             "new_password": "new@test_password",
             "new_password_confirm": "new@test_password"}
 
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_create_post():
     return {
             "title": "sample_title",
             "content": "sample_content"}
 
-
-@pytest.fixture()
+@pytest.fixture
 def data_test_update_post():
     return {
             "content": "update_content",

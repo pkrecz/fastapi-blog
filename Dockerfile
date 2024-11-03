@@ -1,14 +1,21 @@
 FROM python:3.12-bookworm
 
-WORKDIR /work-dir
-
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV APP_HOME=/home/fastapi-blog
+ENV WDIR=$APP_HOME/app
 
-COPY requirements.txt /work-dir/
+RUN mkdir $APP_HOME
+RUN mkdir $WDIR
 
-RUN pip install --no-cache-dir -r /work-dir/requirements.txt
+WORKDIR $WDIR
 
-COPY . /work-dir/
+COPY requirements.txt $WDIR
+
+RUN pip install --no-cache-dir -r $WDIR/requirements.txt
+
+RUN apt-get update
+
+COPY . $WDIR/
 
 CMD ["uvicorn", "main:app", "--host=0.0.0.0", "--port=8000", "--reload"]
