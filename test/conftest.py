@@ -8,7 +8,7 @@ from main import app
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Preparing test envoirment
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_test():
     connection = engine.connect()
     transaction = connection.begin()
@@ -18,7 +18,8 @@ def db_test():
     transaction.rollback()
     connection.close()
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def client_test(db_test):
 
     def override_get_db():
@@ -33,7 +34,7 @@ def client_test(db_test):
 
 
 # Preparing sample data
-@pytest.fixture
+@pytest.fixture()
 def data_test_register_user():
     return {
             "username": "test",
@@ -42,33 +43,73 @@ def data_test_register_user():
             "password": "!ws@test_password",
             "password_confirm": "!ws@test_password"}
 
-@pytest.fixture
+
+@pytest.fixture()
 def data_test_login():
     return {
             "username": "test",
             "password": "!ws@test_password"}
 
-@pytest.fixture
+
+@pytest.fixture()
 def data_test_update_user():
     return {
             "full_name": "User Test - update",
             "email": "test_update@example.com"}
 
-@pytest.fixture
+
+@pytest.fixture()
 def data_test_change_password():
     return {
             "old_password": "!ws@test_password",
             "new_password": "new@test_password",
             "new_password_confirm": "new@test_password"}
 
-@pytest.fixture
-def data_test_create_post():
+
+@pytest.fixture()
+def data_test_create_post_no_file():
     return {
             "title": "sample_title",
             "content": "sample_content"}
 
-@pytest.fixture
+
+@pytest.fixture()
+def data_test_create_post_with_files():
+    return {
+            "title": "sample_title_with_files",
+            "content": "sample_content"}
+
+
+@pytest.fixture()
 def data_test_update_post():
     return {
             "content": "update_content",
             "published": True}
+
+
+@pytest.fixture()
+def data_test_filter_show_post_positive():
+    return str("?title__like=ample_&published=1")
+
+
+@pytest.fixture()
+def data_test_filter_show_post_negative():
+    return str("?title__like=ample_&published=0")
+
+
+@pytest.fixture()
+def data_test_filter_find_post_positive():
+    return str("?title__like=ample_&published=1&username=test")
+
+
+@pytest.fixture()
+def data_test_filter_find_post_negative():
+    return str("?title__like=ample_&published=1&username=testowy")
+
+
+@pytest.fixture()
+def data_test_post_files():
+    list_of_files = [
+                        ("image", open("./test/image_example_1.jpg", "rb")),
+                        ("image", open("./test/image_example_2.jpg", "rb"))]
+    return list_of_files

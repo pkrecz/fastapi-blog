@@ -7,13 +7,7 @@ from .settings import settings
 
 load_dotenv()
 
-
-url_docker = os.getenv('DATABASE_URL')
-if url_docker is not None:
-    url = url_docker
-else:
-    url = settings.DATABASE_URL_LOCAL
-
+url = os.getenv("DATABASE_URL", default=settings.DATABASE_URL_LOCAL)
 
 engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

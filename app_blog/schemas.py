@@ -1,3 +1,4 @@
+from fastapi import UploadFile
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
@@ -6,6 +7,7 @@ from typing import Optional
 # Schemas for users
 class UserBase(BaseModel):
     username: str
+    email: EmailStr
 
 
 class UserViewBase(BaseModel):
@@ -40,18 +42,27 @@ class UserChangePasswordBase(BaseModel):
 class TokenAccessRefreshBase(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: str = 'bearer'
+    token_type: str = "bearer"
 
 
 class TokenAccessBase(BaseModel):
     access_token: str
-    token_type: str = 'bearer'
+    token_type: str = "bearer"
+
+
+# Schemas for images
+class ImageBase(BaseModel):
+    location: str
+    filename: str
+    size: int
+    content_type: str
 
 
 # Schemas for posts
 class PostCreateBase(BaseModel):
     title: str
     content: str
+    image: Optional[list[UploadFile]] | None = None
 
 
 class PostUpdateBase(BaseModel):
@@ -66,11 +77,4 @@ class PostViewBase(BaseModel):
     published: bool
     created_at: datetime
     users: UserBase
-
-
-class PostAllBase(BaseModel):
-    id: int
-    title: str
-    content: str
-    published: bool
-    created_at: datetime
+    images: list[ImageBase]

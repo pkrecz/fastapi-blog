@@ -19,60 +19,74 @@ class UserNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail='User was not found.')
+                        detail="User was not found.")
 
 
 class UserInActiveException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail='User is inactive.')
+                        detail="User is inactive.")
 
 
 class NotTheSamePasswordException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail='Passwords should be the same.')
+                        detail="Passwords should be the same.")
 
 
 class UserExistsException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail='Username already exists.')
+                        detail="Username already exists.")
 
 
 class EmailExistsException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail='Email already exists.')
+                        detail="Email already exists.")
 
 
 class IncorrectPasswordException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail='Incorrect password.')
+                        detail="Incorrect password.")
 
 
 class CredentialsException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail='Invalid authentication credentials.')
+                        detail="Invalid authentication credentials.")
 
 
 class TokenExpiredException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail='Token expired.')
+                        detail="Token expired.")
 
 
 class NoPermissionsException(HTTPException):
     def __init__(self):
         super().__init__(
                         status_code=status.HTTP_403_FORBIDDEN,
-                        detail='You have not a permission to perform action.')
+                        detail="You have not a permission to perform action.")
+
+
+class UploadFileException(HTTPException):
+    def __init__(self):
+        super().__init__(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="Error uploading the file(s).")
+
+
+class TooLargeFileException(HTTPException):
+    def __init__(self):
+        super().__init__(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail="File is too large.")

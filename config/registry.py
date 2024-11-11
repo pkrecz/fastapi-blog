@@ -6,21 +6,21 @@ from app_blog import models as blog_models
 from app_blog import controlers as blog_controlers
 
 
-logger = logging.getLogger('uvicorn.error')
+logger = logging.getLogger("uvicorn.error")
 
 
 def create_tables():
     blog_models.Base.metadata.create_all(bind=engine)
-    logger.info('Tables has been created.')
+    logger.info("Tables has been created.")
 
 
 def load_routers(application):
 
     application.include_router(router=blog_controlers.router_user,
-                                prefix='/admin',
-                                tags=['Authentication'])
+                                prefix="/admin",
+                                tags=["Authentication"])
 
     application.include_router(router=blog_controlers.router_blog,
-                                prefix='/blog',
-                                tags=['Blog'])
-    logger.info('Routes has been loaded.')
+                                prefix="/blog",
+                                tags=["Blog"])
+    logger.info("Routes has been loaded.")

@@ -8,6 +8,8 @@ services:
       - ./.env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    volumes:
+      - media-data:/home/fastapi-blog/app/mediafiles
     expose:
       - "8000"
     depends_on:
@@ -56,6 +58,7 @@ services:
 
 volumes:
   blog-data:
+  media-data:
 
 
 networks:
