@@ -15,7 +15,7 @@ def start_application():
                                 "name": "Piotr Kreczman",
                                 "email": "pkrecz@poczta.onet.pl"})
 
-    app.mount(settings.MEDIA_URL, StaticFiles(directory=settings.MEDIA_DIR))
+    app.mount(settings.MEDIA_URL, StaticFiles(directory=settings.MEDIA_ROOT))
 
     registry.create_tables()
     registry.load_routers(app)

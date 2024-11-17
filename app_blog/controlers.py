@@ -229,7 +229,7 @@ async def download_file(
                         db: Session = Depends(get_db),
                         current_user: UserModel = Depends(repo_dependency.log_dependency)):
     try:
-        location = os.path.join(os.getcwd(), settings.MEDIA_DIR, file_name)
+        location = os.path.join(os.getcwd(), settings.MEDIA_ROOT, file_name)
         if not os.path.exists(location):
             raise exceptions.NotFoundException("File was not found.")
         return FileResponse(

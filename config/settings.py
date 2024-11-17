@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     DATABASE_URL_LOCAL: str = str(os.getenv("DATABASE_URL_LOCAL"))
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
-    MEDIA_DIR: str = str(os.getenv("MEDIA_DIR"))
+    MEDIA_ROOT: str = str(os.getenv("MEDIA_ROOT"))
     MEDIA_URL: str = str(os.getenv("MEDIA_URL"))
     MAX_FILE_SIZE: int = 1024 * 1024
 

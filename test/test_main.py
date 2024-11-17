@@ -1,5 +1,8 @@
 import os
 import logging
+from config.settings import settings
+
+list_of_files_to_be_deleted = []
 
 
 # Subtests for user
@@ -112,6 +115,8 @@ def sub_test_create_post_with_files(
     assert len(response_json["images"]) == 2
     logging.info("Creating post with files testing finished.")
     os.environ["FILE_NAME"] = str(response_json["images"][1]["filename"])
+    for i in range(2):
+        list_of_files_to_be_deleted.append(str(response_json["images"][i]["filename"]))
 
 
 def sub_test_update_post(
@@ -215,6 +220,16 @@ def sub_test_download_file(
     logging.info("Download file testing finished.")
 
 
+def sub_test_delete_media_files():
+    logging.info("Deletion media files testing ...")
+    for file in list_of_files_to_be_deleted:
+        file_path = os.path.join(settings.MEDIA_ROOT, file)
+        assert os.path.exists(file_path) == True
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    logging.info("Deletion media files testing finished.")
+
+
 # Test to be performed
 def test_user(
                 client_test,
@@ -265,4 +280,5 @@ def test_file_operation(
     sub_test_login(client_test, data_test_login)
     sub_test_create_post_with_files(client_test, data_test_create_post_with_files, data_test_post_files)
     sub_test_download_file(client_test)
+    sub_test_delete_media_files()
     logging.info("STOP - testing file operation")

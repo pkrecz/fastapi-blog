@@ -136,7 +136,7 @@ class MediaRepository:
                 file_name = uuid.uuid4().hex
                 file_extension = file.filename.split('.').pop()
                 file_name_full = f"{file_name}.{file_extension}"
-                file_path = os.path.join(settings.MEDIA_DIR, file_name_full)
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name_full)
                 file_url = f"{str(request.base_url)[:-1]}{settings.MEDIA_URL}/{file_name_full}"
                 file.file.seek(0)
                 data = await file.read()
