@@ -12,7 +12,7 @@ def start_application():
                     docs_url=settings.docs_url,
                     redoc_url=None,
                     contact={
-                                "name": "Piotr Kreczman",
+                                "name": "Piotr",
                                 "email": "pkrecz@poczta.onet.pl"})
 
     app.mount(settings.MEDIA_URL, StaticFiles(directory=settings.MEDIA_ROOT))

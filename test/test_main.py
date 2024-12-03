@@ -15,9 +15,9 @@ def sub_test_register_user(
     response_json = response.json()
     logging.info("Register user testing ...")
     assert response.status_code == 201
-    assert response_json["username"] == "test"
-    assert response_json["full_name"] == "User Test"
-    assert response_json["email"] == "test@example.com"
+    assert response_json["username"] == data_test_register_user["username"]
+    assert response_json["full_name"] == data_test_register_user["full_name"]
+    assert response_json["email"] == data_test_register_user["email"]
     assert response_json["is_active"] == True
     logging.info("Register user testing finished.")
 
@@ -48,8 +48,8 @@ def sub_test_update_user(
     response_json = response.json()
     logging.info("Update user testing ...")
     assert response.status_code == 200
-    assert response_json["full_name"] == "User Test - update"
-    assert response_json["email"] == "test_update@example.com"
+    assert response_json["full_name"] == data_test_update_user["full_name"]
+    assert response_json["email"] == data_test_update_user["email"]
     logging.info("Update user testing finished.")
 
 
@@ -90,8 +90,8 @@ def sub_test_create_post_no_file(
     response_json = response.json()
     logging.info("Creating post testing ...")
     assert response.status_code == 201
-    assert response_json["title"] == "sample_title"
-    assert response_json["content"] == "sample_content"
+    assert response_json["title"] == data_test_create_post_no_file["title"]
+    assert response_json["content"] == data_test_create_post_no_file["content"]
     assert response_json["published"] == False
     assert response_json["created_at"] is not None
     assert response_json["users"] is not None
@@ -111,7 +111,7 @@ def sub_test_create_post_with_files(
     response_json = response.json()
     logging.info("Creating post with files testing ...")
     assert response.status_code == 201
-    assert response_json["title"] == "sample_title_with_files"
+    assert response_json["title"] == data_test_create_post_with_files["title"]
     assert len(response_json["images"]) == 2
     logging.info("Creating post with files testing finished.")
     os.environ["FILE_NAME"] = str(response_json["images"][1]["filename"])
@@ -130,8 +130,8 @@ def sub_test_update_post(
     response_json = response.json()
     logging.info("Updating post testing ...")
     assert response.status_code == 200
-    assert response_json["content"] == "update_content"
-    assert response_json["published"] == True
+    assert response_json["content"] == data_test_update_post["content"]
+    assert response_json["published"] == data_test_update_post["published"]
     logging.info("Updating post testing finished.")
 
 
