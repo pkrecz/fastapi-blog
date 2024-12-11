@@ -1,22 +1,30 @@
 import pytest
+import logging
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 from config.database import engine, get_db 
 from main import app
 
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Preparing test envoirment
 @pytest.fixture(scope="session")
 def db_test():
+    session_local = sessionmaker(
+                                    autocommit=False,
+                                    autoflush=False)
+    logging.info("Configuration -----> Session local created.")
     connection = engine.connect()
+    logging.info("Configuration -----> Connection established.")
     transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
+    logging.info("Configuration -----> Transaction started.")
+    session = session_local(bind=connection)
+    logging.info("Configuration -----> Session ready for running.")
     yield session
     session.close()
+    logging.info("Configuration -----> Session closed.")
     transaction.rollback()
+    logging.info("Configuration -----> Rollback executed.")
     connection.close()
+    logging.info("Configuration -----> Connection closed.")
 
 
 @pytest.fixture(scope="session")
@@ -29,11 +37,13 @@ def client_test(db_test):
             db_test.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    logging.info("Configuration -----> Dependency overrided.")
     with TestClient(app) as client_test:
+        logging.info("Configuration -----> Client ready for running.")
         yield client_test
+        logging.info("Configuration -----> Client finished job.")
 
 
-# Preparing sample data
 @pytest.fixture()
 def data_test_register_user():
     return {
