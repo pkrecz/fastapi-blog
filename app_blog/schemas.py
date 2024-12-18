@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Optional
 
 
-# Schemas for users
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -38,7 +37,6 @@ class UserChangePasswordBase(BaseModel):
     new_password_confirm: str
 
 
-# Schemas for token
 class TokenAccessRefreshBase(BaseModel):
     access_token: str
     refresh_token: str
@@ -50,7 +48,6 @@ class TokenAccessBase(BaseModel):
     token_type: str = "bearer"
 
 
-# Schemas for images
 class ImageBase(BaseModel):
     location: str
     filename: str
@@ -58,7 +55,6 @@ class ImageBase(BaseModel):
     content_type: str
 
 
-# Schemas for posts
 class PostCreateBase(BaseModel):
     title: str
     content: str

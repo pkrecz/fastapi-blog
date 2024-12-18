@@ -2,7 +2,7 @@ import pytest
 import logging
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
-from config.database import engine, get_db 
+from config.database import get_engine, get_db 
 from main import app
 
 
@@ -12,7 +12,7 @@ def db_test():
                                     autocommit=False,
                                     autoflush=False)
     logging.info("Configuration -----> Session local created.")
-    connection = engine.connect()
+    connection = get_engine().connect()
     logging.info("Configuration -----> Connection established.")
     transaction = connection.begin()
     logging.info("Configuration -----> Transaction started.")

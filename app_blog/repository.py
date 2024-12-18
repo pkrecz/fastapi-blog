@@ -1,78 +1,80 @@
 import os
 import bcrypt
 import uuid
-from fastapi import Depends, UploadFile
+from pydantic import BaseModel
+from fastapi import UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.requests import Request
+from fastapi_filter.contrib.sqlalchemy import Filter
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from config.settings import settings
-from config.database import get_db
+from config.database import Base
 from jose import JWTError, jwt
-from typing import IO
+from typing import IO, Type, TypeVar
 from . import exceptions
-from .models import UserModel, PostModel, ImageModel
+from .models import ImageModel
 from .schemas import ImageBase
 
 
+Model = TypeVar("Model", bound=Base)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/login/")
 
 
-class FunctionRepository:
+class AuthenticationRepository:
 
-    def query_get_user_by_username(self, db, username: str):
-        return db.query(UserModel).filter_by(username=username)
-
-
-    def query_get_user_by_email(self, db, email: str):
-        return db.query(UserModel).filter_by(email=email)
+    def __init__(self, db: Session, model: type[Model]):
+        self.db = db
+        self.model = model
 
 
-    def query_get_post_by_user_id(self, db, user_id: int):
-        return db.query(PostModel).filter_by(created_by=user_id)
+    def check_if_exists_user_by_username(self, username: str) -> bool:
+        query = select(self.model).filter_by(username=username)
+        query = exists(query).select()
+        return self.db.scalar(query)
 
 
-    def query_get_post_by_title(self, db, title_post: str):
-        return db.query(PostModel).filter_by(title=title_post)
+    def check_if_exists_user_by_email(self, email: str) -> bool:
+        query = select(self.model).filter_by(email=email)
+        query = exists(query).select()
+        return self.db.scalar(query)
 
 
-    def query_get_post_own_by_ids(self, db, post_id: int, user_id: int):
-        return db.query(PostModel).filter_by(id=post_id, created_by=user_id)
+    def get_user_by_username(self, username: str) -> str:
+        query = select(self.model).filter_by(username=username)
+        return self.db.scalar(query)
 
 
-    def query_get_post_all(self, db):
-        return db.query(PostModel)
-
-
-    def check_the_same_password(self, password: str, password_confirm: str):
+    def check_the_same_password(self, password: str, password_confirm: str) -> bool:
         return bool(password == password_confirm)
 
 
-    def hash_password(self, password: str):
+    def hash_password(self, password: str) -> str:
         pwd = password.encode("utf-8")
         salt = bcrypt.gensalt()
         return str(bcrypt.hashpw(password=pwd, salt=salt).decode("utf-8"))
 
 
-    def verify_password(self, password: str, hashed_password: str):
+    def verify_password(self, password: str, hashed_password: str) -> bool:
         pwd = password.encode("utf-8")
         hashed_pwd = hashed_password.encode("utf-8")
         return bool(bcrypt.checkpw(password=pwd, hashed_password=hashed_pwd))
 
 
-    def get_active_status(self, db, username: str):
-        return bool(db.query(UserModel).filter_by(username=username).first().is_active)
+    def get_active_status(self, username: str) -> bool:
+        return bool(self.db.query(self.model).filter_by(username=username).first().is_active)
 
 
-    def authenticate_user(self, db, username: str, password: str):
-        user_query = self.query_get_user_by_username(db, username=username)
-        if user_query.count() == 0 or self.verify_password(password, user_query.first().hashed_password) == False:
-            return False
+    def authenticate_user(self, username: str, password: str):
+        instance = self.get_user_by_username(username=username)
+        if instance and self.verify_password(password, instance.hashed_password) == True:
+            return instance
         else:
-            return user_query.first()
+            return False
 
 
-    def create_token(self, data: dict, refresh: bool):
+    def create_token(self, data: dict, refresh: bool) -> str:
         to_encode = data.copy()
         if refresh:
             expire = datetime.now(timezone.utc) + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
@@ -85,7 +87,7 @@ class FunctionRepository:
         return str(encoded_jwt)
 
 
-    def verify_token(self, token: str, refresh: bool):
+    def verify_token(self, token: str, refresh: bool) -> str:
         try:
             if refresh:
                 payload = jwt.decode(token, settings.REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM])
@@ -101,30 +103,31 @@ class FunctionRepository:
             return None
 
 
-class DependencyRepository:
+class BlogRepository:
 
-    async def log_dependency(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-        username = repo_functions.verify_token(token=token, refresh=False)
-        if username is None:
-            raise exceptions.CredentialsException
-        user_query = repo_functions.query_get_user_by_username(db, username=username)
-        if user_query.count() == 0:
-            raise exceptions.CredentialsException
-        if repo_functions.get_active_status(db, user_query.first().username) == False:
-            raise exceptions.UserInActiveException
-        return user_query.first()
+    def __init__(self, db: Session, model: type[Model]):
+        self.db = db
+        self.model = model
+
+    def get_post_by_user_id(self, user_id: int) -> Type[Model]:
+        query = select(self.model).filter_by(created_by=user_id)
+        return self.db.scalars(query).all()
 
 
-    async def refresh_token_dependency(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-        username = repo_functions.verify_token(token=token, refresh=True)
-        if username is None:
-            raise exceptions.CredentialsException
-        user_query = repo_functions.query_get_user_by_username(db, username=username)
-        if user_query.count() == 0:
-            raise exceptions.CredentialsException
-        if repo_functions.get_active_status(db, user_query.first().username) == False:
-            raise exceptions.UserInActiveException
-        return user_query.first()
+    def query_get_post_by_user_id(self, user_id: int):
+        return select(self.model).filter_by(created_by=user_id)
+
+
+    def query_get_post_by_title(self, title_post: str):
+        return select(self.model).filter_by(title=title_post)
+
+
+    def query_get_post_own_by_ids(self, post_id: int, user_id: int):
+        return select(self.model).filter_by(id=post_id, created_by=user_id)
+
+
+    def query_get_post_all(self):
+        return select(self.model)
 
 
 class MediaRepository:
@@ -167,11 +170,58 @@ class MediaRepository:
                 ImageBase(**file)
                 instance = ImageModel(**file, post_id=post_id)
                 db.add(instance)
-                db.commit()
+                db.flush()
         except:
             raise exceptions.BadRequestException("Error with saving info files.")
 
 
-repo_functions = FunctionRepository()
-repo_dependency = DependencyRepository()
-repo_media = MediaRepository()
+class CrudOperationRepository:
+
+    def __init__(self, db: Session, model: type[Model]):
+        self.db = db
+        self.model = model
+
+
+    def get_by_id(self, id: int) -> Type[Model]:
+        return self.db.get(self.model, id)
+
+
+    def get_all(self, filter: Filter = None) -> Type[Model]:
+        query = select(self.model)
+        if filter is not None:
+            query = filter.filter(query)
+            query = filter.sort(query)
+        return self.db.scalars(query).all()
+
+
+    def create(self, record: Type[Model]) -> Type[Model]:
+        self.db.add(record)
+        self.db.flush()
+        self.db.refresh(record)
+        return record
+
+
+    def update(self, record: Type[Model], data: Type[BaseModel]) -> Type[Model]:
+        for key, value in data.model_dump(exclude_none=True).items():
+            setattr(record, key, value)
+        self.db.merge(record)
+        self.db.flush()
+        self.db.refresh(record)
+        return record
+
+
+    def delete(self, record: Type[Model]) -> bool:
+        if record is not None:
+            self.db.delete(record)
+            self.db.flush()
+            return True
+        else:
+            return False
+
+
+    def retrieve(self, record: Type[Model]) -> Type[Model]:
+        return record
+
+
+    def list(self, record: Type[Model]) -> list[Type[Model]]:
+        return record
