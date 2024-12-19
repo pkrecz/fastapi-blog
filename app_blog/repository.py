@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from config.settings import settings
 from config.database import Base
 from jose import JWTError, jwt
-from typing import IO, Type, TypeVar
+from typing import IO, TypeVar, Annotated
 from . import exceptions
 from .models import ImageModel
 from .schemas import ImageBase
@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/login/")
 
 class AuthenticationRepository:
 
-    def __init__(self, db: Session, model: type[Model]):
+    def __init__(self, db: Session, model: Model):
         self.db = db
         self.model = model
 
@@ -63,7 +63,8 @@ class AuthenticationRepository:
 
 
     def get_active_status(self, username: str) -> bool:
-        return bool(self.db.query(self.model).filter_by(username=username).first().is_active)
+        query = select(self.model).filter_by(username=username)
+        return bool(self.db.scalar(query).is_active)
 
 
     def authenticate_user(self, username: str, password: str):
@@ -105,11 +106,11 @@ class AuthenticationRepository:
 
 class BlogRepository:
 
-    def __init__(self, db: Session, model: type[Model]):
+    def __init__(self, db: Session, model: Model):
         self.db = db
         self.model = model
 
-    def get_post_by_user_id(self, user_id: int) -> Type[Model]:
+    def get_post_by_user_id(self, user_id: int) -> Model:
         query = select(self.model).filter_by(created_by=user_id)
         return self.db.scalars(query).all()
 
@@ -177,16 +178,16 @@ class MediaRepository:
 
 class CrudOperationRepository:
 
-    def __init__(self, db: Session, model: type[Model]):
+    def __init__(self, db: Session, model: Model):
         self.db = db
         self.model = model
 
 
-    def get_by_id(self, id: int) -> Type[Model]:
+    def get_by_id(self, id: int) -> Model:
         return self.db.get(self.model, id)
 
 
-    def get_all(self, filter: Filter = None) -> Type[Model]:
+    def get_all(self, filter: Filter = None) -> Model:
         query = select(self.model)
         if filter is not None:
             query = filter.filter(query)
@@ -194,15 +195,17 @@ class CrudOperationRepository:
         return self.db.scalars(query).all()
 
 
-    def create(self, record: Type[Model]) -> Type[Model]:
+    def create(self, record: Model) -> Model:
         self.db.add(record)
         self.db.flush()
         self.db.refresh(record)
         return record
 
 
-    def update(self, record: Type[Model], data: Type[BaseModel]) -> Type[Model]:
-        for key, value in data.model_dump(exclude_none=True).items():
+    def update(self, record: Model, data: Annotated[BaseModel, dict]) -> Model:
+        if isinstance(data, BaseModel):
+            data = data.model_dump(exclude_none=True)
+        for key, value in data.items():
             setattr(record, key, value)
         self.db.merge(record)
         self.db.flush()
@@ -210,7 +213,7 @@ class CrudOperationRepository:
         return record
 
 
-    def delete(self, record: Type[Model]) -> bool:
+    def delete(self, record: Model) -> bool:
         if record is not None:
             self.db.delete(record)
             self.db.flush()
@@ -219,9 +222,9 @@ class CrudOperationRepository:
             return False
 
 
-    def retrieve(self, record: Type[Model]) -> Type[Model]:
+    def retrieve(self, record: Model) -> Model:
         return record
 
 
-    def list(self, record: Type[Model]) -> list[Type[Model]]:
+    def list(self, record: Model) -> list[Model]:
         return record

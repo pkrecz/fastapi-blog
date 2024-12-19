@@ -17,7 +17,7 @@ url = os.getenv("DATABASE_URL", default=settings.DATABASE_URL_LOCAL)
 
 @cache
 def get_engine(db_url: str = url):
-    return create_engine(db_url, pool_pre_ping=True)
+    return create_engine(db_url)
 
 
 def get_session():

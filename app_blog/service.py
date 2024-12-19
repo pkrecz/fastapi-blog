@@ -1,5 +1,5 @@
 import os
-from typing import Type, TypeVar
+from typing import TypeVar
 from pydantic import BaseModel
 from fastapi import status, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -28,7 +28,7 @@ class AuthenticationService:
         self.blog = BlogRepository(self.db, PostModel)
 
 
-    def auth_register_user(self, data: Type[BaseModel]) -> Type[Model]:
+    def auth_register_user(self, data: BaseModel) -> Model:
         try:
             if self.auth.check_if_exists_user_by_username(data.username):
                 raise exceptions.UserExistsException
@@ -47,7 +47,7 @@ class AuthenticationService:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def auth_update_user(self, data: Type[BaseModel]) -> Type[Model]:
+    def auth_update_user(self, data: BaseModel) -> Model:
         try:
             instance = self.auth.get_user_by_username(self.cuser.username)
             if not instance:
@@ -71,7 +71,7 @@ class AuthenticationService:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def auth_change_password(self, data: Type[BaseModel]):
+    def auth_change_password(self, data: BaseModel):
         try:
             instance = self.auth.get_user_by_username(self.cuser.username)
             if not instance:
@@ -81,16 +81,13 @@ class AuthenticationService:
             if self.auth.verify_password(data.old_password, instance.hashed_password) == False:
                 raise exceptions.IncorrectPasswordException
             data = {"hashed_password": self.auth.hash_password(data.new_password)}
-            for key, value in data.items():
-                setattr(instance, key, value)
-            self.db.merge(instance)
-            self.db.flush()
+            self.crud.update(instance, data)
             return JSONResponse(content={"message": "Password changed successfully."}, status_code=status.HTTP_200_OK)
         except Exception as exception:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def auth_login(self, data: Type[OAuth2PasswordBearer]):
+    def auth_login(self, data: OAuth2PasswordBearer):
         try:
             user = self.auth.authenticate_user(data.username, data.password)
             if not user:
@@ -124,7 +121,7 @@ class BlogService:
         self.blog = BlogRepository(self.db, PostModel)
 
 
-    async def blog_create_post(self, data: Type[BaseModel]):
+    async def blog_create_post(self, data: BaseModel):
         try:
             query = self.blog.query_get_post_by_title(data.title)
             instance = self.db.scalars(query).all()
@@ -142,7 +139,7 @@ class BlogService:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def blog_update_post(self, id: int, data: Type[BaseModel]):
+    def blog_update_post(self, id: int, data: BaseModel):
         try:
             query = self.blog.query_get_post_own_by_ids(id, self.cuser.id)
             instance = self.db.scalar(query)
@@ -166,7 +163,7 @@ class BlogService:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def blog_show_my_posts(self, filter: Type[Filter]):
+    def blog_show_my_posts(self, filter: Filter):
         try:
             query = self.blog.query_get_post_by_user_id(self.cuser.id)
             if filter is not None:
@@ -180,7 +177,7 @@ class BlogService:
             return JSONResponse(content={"detail": exception.detail}, status_code=exception.status_code)
 
 
-    def blog_find_post(self, filter: Type[Filter]):
+    def blog_find_post(self, filter: Filter):
         try:
             query = self.blog.query_get_post_all().join(UserModel)
             if filter is not None:

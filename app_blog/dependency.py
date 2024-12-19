@@ -1,7 +1,7 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import Type, TypeVar
+from typing import TypeVar
 from config.database import Base, get_db
 from . import exceptions
 from .models import UserModel
@@ -18,7 +18,7 @@ class Dependency:
     async def log_dependency(
                                         self,
                                         token: str = Depends(oauth2_scheme),
-                                        db: Session = Depends(get_db)) -> Type[Model]:
+                                        db: Session = Depends(get_db)):
         self.auth = AuthenticationRepository(db, UserModel)
         username = self.auth.verify_token(token=token, refresh=False)
         if username is None:
@@ -32,7 +32,7 @@ class Dependency:
     async def refresh_token_dependency(
                                         self,
                                         token: str = Depends(oauth2_scheme),
-                                        db: Session = Depends(get_db)) -> Type[Model]:
+                                        db: Session = Depends(get_db)):
         self.auth = AuthenticationRepository(db, UserModel)
         username = self.auth.verify_token(token=token, refresh=True)
         if username is None:
