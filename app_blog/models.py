@@ -14,7 +14,7 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    posts: Mapped[list["PostModel"]] = relationship(back_populates="users")
+    posts: Mapped[list["PostModel"]] = relationship("PostModel", back_populates="users")
 
 
 class PostModel(Base):
@@ -27,8 +27,8 @@ class PostModel(Base):
     published: Mapped[bool] = mapped_column(Boolean, server_default="False")
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
-    users: Mapped["UserModel"] = relationship(back_populates="posts")
-    images: Mapped[list["ImageModel"]] = relationship(back_populates="posts")
+    users: Mapped["UserModel"] = relationship("UserModel", back_populates="posts")
+    images: Mapped[list["ImageModel"]] = relationship("ImageModel", back_populates="posts")
 
 
 class ImageModel(Base):
@@ -41,4 +41,4 @@ class ImageModel(Base):
     size: Mapped[int] = mapped_column(Integer, nullable=False)
     content_type: Mapped[str] = mapped_column(String, nullable=False)
     post_id: Mapped[int] = mapped_column(Integer, ForeignKey("post.id"))
-    posts: Mapped["PostModel"] = relationship(back_populates="images")
+    posts: Mapped["PostModel"] = relationship("PostModel", back_populates="images")

@@ -5,6 +5,7 @@ from sqlalchemy.exc import DatabaseError, SQLAlchemyError
 from dotenv import load_dotenv
 from functools import cache
 from .settings import settings
+from .util import Singleton
 
 
 class Base(DeclarativeBase):
@@ -25,7 +26,7 @@ def get_session():
     return session()
 
 
-class DatabaseSessionClass:
+class DatabaseSessionClass(metaclass=Singleton):
 
     def __enter__(self):
         self.db = get_session()
