@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/login/")
 
 class AuthenticationRepository:
 
-    def __init__(self, db: Session, model: Model):
+    def __init__(self, db: Session = None, model: Model = None):
         self.db = db
         self.model = model
 

@@ -7,16 +7,15 @@ from main import app
 
 
 @pytest.fixture(scope="session")
-def db_test():
-    session_local = sessionmaker(
-                                    autocommit=False,
-                                    autoflush=False)
-    logging.info("Configuration -----> Session local created.")
+def db():
     connection = get_engine().connect()
     logging.info("Configuration -----> Connection established.")
     transaction = connection.begin()
     logging.info("Configuration -----> Transaction started.")
-    session = session_local(bind=connection)
+    session = sessionmaker(
+                            autocommit=False,
+                            autoflush=False,
+                            bind=connection)()
     logging.info("Configuration -----> Session ready for running.")
     yield session
     session.close()
@@ -28,19 +27,19 @@ def db_test():
 
 
 @pytest.fixture(scope="session")
-def client_test(db_test):
+def client(db):
 
     def override_get_db():
         try:
-            yield db_test
+            yield db
         finally:
-            db_test.close()
+            db.close()
 
     app.dependency_overrides[get_db] = override_get_db
     logging.info("Configuration -----> Dependency overrided.")
-    with TestClient(app) as client_test:
+    with TestClient(app) as cli:
         logging.info("Configuration -----> Client ready for running.")
-        yield client_test
+        yield cli
         logging.info("Configuration -----> Client finished job.")
 
 

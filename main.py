@@ -4,22 +4,19 @@ from config.settings import settings
 from config import registry
 
 
-def start_application():
-
-    app = FastAPI(
-                    title=settings.title,
-                    version=settings.version,
-                    docs_url=settings.docs_url,
-                    redoc_url=None,
-                    contact={
-                                "name": "Piotr",
-                                "email": "pkrecz@poczta.onet.pl"})
-
+def lifespan(app: FastAPI):
+    registry.init_models()
+    registry.init_routers(app)
     app.mount(settings.MEDIA_URL, StaticFiles(directory=settings.MEDIA_ROOT))
-
-    registry.create_tables()
-    registry.load_routers(app)
-    return app
+    yield
 
 
-app = start_application()
+app = FastAPI(
+                lifespan=lifespan,
+                title=settings.title,
+                version=settings.version,
+                docs_url=settings.docs_url,
+                redoc_url=None,
+                contact={
+                            "name": "Piotr",
+                            "email": "pkrecz@poczta.onet.pl"})
