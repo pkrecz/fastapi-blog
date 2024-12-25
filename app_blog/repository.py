@@ -195,7 +195,8 @@ class CrudOperationRepository:
         return self.db.scalars(query).all()
 
 
-    def create(self, record: Model) -> Model:
+    def create(self, data: dict) -> Model:
+        record = self.model(**data)
         self.db.add(record)
         self.db.flush()
         self.db.refresh(record)
