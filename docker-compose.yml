@@ -12,6 +12,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - media-data:/home/fastapi-blog/app/${MEDIA_ROOT}
     expose:
       - "8000"

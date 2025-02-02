@@ -1,20 +1,47 @@
 import pytest
 import logging
+from collections.abc import Generator
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker
-from config.database import get_engine, get_db 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+from config.database import get_db, Base
+from testcontainers.postgres import PostgresContainer
 from main import app
 
 
 @pytest.fixture(scope="session")
-def db():
-    connection = get_engine().connect()
+def sync_engine() -> Generator:
+
+    container = PostgresContainer("postgres:17.0-bookworm", driver="psycopg2")
+    container.start()
+
+    engine = create_engine(url=container.get_connection_url())
+
+    with engine.begin() as _engine:
+        Base.metadata.drop_all(bind=_engine)
+        Base.metadata.create_all(bind=_engine)
+    logging.info("Configuration -----> Tables for testing has been created.")
+
+    yield engine
+
+    with engine.begin() as _engine:
+        Base.metadata.drop_all(bind=_engine)
+    logging.info("Configuration -----> Tables for testing has been removed.")
+
+    container.stop()
+
+
+@pytest.fixture(scope="session")
+def sync_session(sync_engine) -> Generator:
+
+    connection = sync_engine.connect()
     logging.info("Configuration -----> Connection established.")
     transaction = connection.begin()
     logging.info("Configuration -----> Transaction started.")
     session = sessionmaker(
                             autocommit=False,
                             autoflush=False,
+                            expire_on_commit=False,
                             bind=connection)()
     logging.info("Configuration -----> Session ready for running.")
     yield session
@@ -27,13 +54,10 @@ def db():
 
 
 @pytest.fixture(scope="session")
-def client(db):
+def client(sync_session: Session) -> Generator[TestClient, None, None]:
 
     def override_get_db():
-        try:
-            yield db
-        finally:
-            db.close()
+        yield sync_session
 
     app.dependency_overrides[get_db] = override_get_db
     logging.info("Configuration -----> Dependency overrided.")
