@@ -9,7 +9,6 @@ ENV WDIR=$APP_HOME/app
 
 RUN mkdir $APP_HOME
 RUN mkdir $WDIR
-RUN mkdir $WDIR/$MEDIA_ROOT
 
 WORKDIR $WDIR
 

@@ -6,6 +6,7 @@ from fastapi import UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.requests import Request
 from fastapi_filter.contrib.sqlalchemy import Filter
+from functools import lru_cache
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
@@ -41,6 +42,7 @@ class AuthenticationRepository:
         return self.db.scalar(query)
 
 
+    @lru_cache
     def get_user_by_username(self, username: str) -> str:
         query = select(self.model).filter_by(username=username)
         return self.db.scalar(query)
@@ -110,6 +112,7 @@ class BlogRepository:
         self.db = db
         self.model = model
 
+    @lru_cache
     def get_post_by_user_id(self, user_id: int) -> Model:
         query = select(self.model).filter_by(created_by=user_id)
         return self.db.scalars(query).all()

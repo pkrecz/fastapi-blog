@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
@@ -20,4 +21,9 @@ class Settings(BaseSettings):
     MEDIA_URL: str = str(os.getenv("MEDIA_URL"))
     MAX_FILE_SIZE: int = 1024 * 1024
 
-settings = Settings()
+
+@lru_cache(maxsize=None, typed=False)
+def get_settings():
+    return Settings()
+
+settings = get_settings()
