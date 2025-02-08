@@ -3,10 +3,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.exc import DatabaseError, SQLAlchemyError
 from dotenv import load_dotenv
-from functools import lru_cache
 from .settings import settings
 from .util import Singleton
+from .redis import get_redis
 
+
+redis_session = get_redis()
 
 class Base(DeclarativeBase):
     pass
@@ -16,9 +18,14 @@ load_dotenv()
 url = os.getenv("DATABASE_URL", default=settings.DATABASE_URL_LOCAL)
 
 
-@lru_cache
 def get_engine(db_url: str = url):
-    return create_engine(url = db_url, pool_pre_ping=True)
+    cached_value = redis_session.get("db_url")
+    if cached_value is not None:
+        url = cached_value
+    else:
+        redis_session.set("db_url", db_url, ex=3600)
+        url = db_url
+    return create_engine(url=url, pool_pre_ping=True)
 
 
 def get_session():

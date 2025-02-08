@@ -11,6 +11,8 @@ services:
       - ./.env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+      - REDIS_HOST=service_redis
+      - REDIS_PORT=6379
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - media-data:/home/fastapi-blog/app/${MEDIA_ROOT}
@@ -18,6 +20,8 @@ services:
       - "8000"
     depends_on:
       service_db:
+        condition: service_healthy
+      service_redis:
         condition: service_healthy
     restart: always
     networks:
@@ -57,6 +61,18 @@ services:
     restart: always
     networks:
       - network-external
+
+
+  service_redis:
+    image: redis:7.0
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      start_period: 3s
+    expose:
+      - "6379"
+    networks:
       - network-internal
 
 

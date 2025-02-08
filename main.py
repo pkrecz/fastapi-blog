@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from config.settings import settings
 from config import registry
+from config.settings import settings
 
 
 def lifespan(app: FastAPI):
