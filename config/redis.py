@@ -1,6 +1,7 @@
 import os
 import redis
 from redis.exceptions import ConnectionError
+from typing import Generator
 from dotenv import load_dotenv
 
 
@@ -27,7 +28,9 @@ class RedisSupport:
     def init(self):
         return self._redis
 
-session = RedisSupport().init()
 
-def get_redis():
-    return session
+instance = RedisSupport()
+
+def get_redis() -> Generator:
+    session = instance.init()
+    yield session

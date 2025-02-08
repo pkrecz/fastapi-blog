@@ -8,7 +8,7 @@ from .util import Singleton
 from .redis import get_redis
 
 
-redis_session = get_redis()
+redis_session = next(get_redis())
 
 class Base(DeclarativeBase):
     pass
